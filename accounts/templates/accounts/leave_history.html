@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave History - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">📋 Leave History</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'leave_request' %}" class="btn btn-primary">+ Request Leave</a>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <a href="{% url 'leave_history' %}" class="btn btn-outline-secondary {% if not current_status %}active{% endif %}">All</a>
+                <a href="?status=P" class="btn btn-outline-warning {% if current_status == 'P' %}active{% endif %}">Pending</a>
+                <a href="?status=A" class="btn btn-outline-success {% if current_status == 'A' %}active{% endif %}">Approved</a>
+                <a href="?status=R" class="btn btn-outline-danger {% if current_status == 'R' %}active{% endif %}">Rejected</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Requests Table -->
+    {% if leaves %}
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr class="bg-light">
+                            <th>Leave Type</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>
+                                <strong>{{ leave.get_leave_type_display }}</strong>
+                            </td>
+                            <td>{{ leave.start_date|date:"M d, Y" }}</td>
+                            <td>{{ leave.end_date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ leave.days_requested }} days</span>
+                            </td>
+                            <td>
+                                <small class="text-muted" title="{{ leave.reason }}">
+                                    {{ leave.reason|truncatewords:5 }}
+                                </small>
+                            </td>
+                            <td>
+                                {% if leave.status == 'P' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif leave.status == 'A' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ leave.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <strong>No leave requests found!</strong> You haven't submitted any leave requests yet.
+        <a href="{% url 'leave_request' %}" class="alert-link">Submit a request now</a>
+    </div>
+    {% endif %}
+
+    <!-- Back to Dashboard -->
+    <div class="mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+</style>
+{% endblock %}

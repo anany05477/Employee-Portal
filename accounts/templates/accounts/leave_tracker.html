@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Tracker - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">🧾 Leave Tracker</h1>
+            <p class="text-muted">Review pending leave requests from your team or approve requests as a manager.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Total Pending</h5>
+                    <p class="display-6 mb-0">{{ tracker_summary.total_pending }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title">Subordinate Requests</h5>
+                    <p class="display-6 mb-0">{{ tracker_summary.subordinate_requests }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if pending_requests %}
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Pending Leave Requests</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Dates</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Requested</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in pending_requests %}
+                        <tr>
+                            <td>
+                                <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
+                                <div class="text-muted">{{ leave.employee.employee_id }}</div>
+                            </td>
+                            <td>{{ leave.get_leave_type_display }}</td>
+                            <td>{{ leave.start_date|date:"M d, Y" }} → {{ leave.end_date|date:"M d, Y" }}</td>
+                            <td><span class="badge bg-info">{{ leave.days_requested }} days</span></td>
+                            <td>{{ leave.reason|truncatewords:12 }}</td>
+                            <td>{{ leave.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <form method="post" action="{% url 'approve_leave' leave.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success mb-1">Approve</button>
+                                </form>
+                                <form method="post" action="{% url 'reject_leave' leave.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <strong>No pending leave requests.</strong> All assigned leave requests have been reviewed.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    border-radius: 0.35rem;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc;
+}
+</style>
+{% endblock %}

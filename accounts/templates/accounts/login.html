@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-xl-9 col-lg-10">
+            <div class="row g-0 shadow-lg rounded overflow-hidden login-panel">
+                <div class="col-lg-6 login-side d-flex align-items-center">
+                    <div class="login-side-inner p-5 text-white">
+                        <h1 class="display-5 fw-bold mb-3">Welcome Back</h1>
+                        <p class="lead text-white-75 mb-4">Sign in and manage your employee dashboard, attendance, leave requests, and documents all in one place.</p>
+                        <div class="feature-list">
+                            <p class="mb-2 fw-semibold">Employee Portal Features:</p>
+                            <ul class="list-unstyled text-white-75 mb-0">
+                                <li class="mb-2">• Smart leave tracker</li>
+                                <li class="mb-2">• Attendance overview</li>
+                                <li class="mb-2">• Performance analytics</li>
+                                <li>• Secure document uploads</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 login-form-side bg-white p-5 d-flex align-items-center">
+                    <div class="w-100">
+                        <div class="text-center mb-5">
+                            <div class="logo-circle mx-auto mb-3">
+                                <span class="logo-icon">Employee Portal</span>
+                            </div>
+                            <h2 class="fw-bold mb-1">Login to Portal</h2>
+                            <p class="text-muted mb-0">Enter your credentials to continue.</p>
+                        </div>
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-4">
+                                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                    <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 btn-lg">Sign In</button>
+                        </form>
+                        <div class="text-center mt-4">
+                            <p class="mb-0 text-muted">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-panel {
+    min-height: 620px;
+    overflow: hidden;
+}
+
+.login-side {
+    background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
+    color: #fff;
+}
+
+.login-side-inner {
+    max-width: 420px;
+}
+
+.feature-list li {
+    margin-bottom: 0.75rem;
+}
+
+.login-form-side {
+    min-height: 620px;
+}
+
+.login-form-side .form-control {
+    border-radius: 1rem;
+    padding: 1rem 1rem;
+    border: 1px solid #e5e7eb;
+}
+
+.login-form-side .btn-primary {
+    border-radius: 1rem;
+    padding: 0.95rem 1rem;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+}
+
+.logo-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(79, 70, 229, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-icon {
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 1.75rem;
+}
+
+@media (max-width: 991.98px) {
+    .login-panel {
+        min-height: auto;
+    }
+
+    .login-side,
+    .login-form-side {
+        min-height: auto;
+    }
+
+    .login-side {
+        padding: 40px 30px;
+    }
+
+    .login-form-side {
+        padding: 40px 30px;
+    }
+}
+</style>
+{% endblock %}

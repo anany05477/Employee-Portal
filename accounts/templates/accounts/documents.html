@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Documents - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">📄 Documents</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upload Form -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📤 Upload Document</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.document_type.id_for_label }}" class="form-label">Document Type</label>
+                            {{ form.document_type }}
+                            {% if form.document_type.errors %}
+                                <small class="text-danger d-block">{{ form.document_type.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <small class="text-danger d-block">{{ form.title.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.file.id_for_label }}" class="form-label">File</label>
+                            {{ form.file }}
+                            {% if form.file.errors %}
+                                <small class="text-danger d-block">{{ form.file.errors }}</small>
+                            {% endif %}
+                            <small class="text-muted d-block">Max file size: 5MB</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <small class="text-danger d-block">{{ form.description.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Upload Document</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents List -->
+        <div class="col-lg-8">
+            {% if documents %}
+                {% for document in documents %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center">
+                                    <div style="font-size: 2rem; margin-right: 1rem;">
+                                        {% if 'pdf' in document.file.url %}
+                                            📕
+                                        {% elif 'doc' in document.file.url %}
+                                            📝
+                                        {% elif 'xls' in document.file.url %}
+                                            📊
+                                        {% elif 'jpg' in document.file.url or 'png' in document.file.url %}
+                                            🖼️
+                                        {% else %}
+                                            📄
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1">{{ document.title }}</h5>
+                                        <p class="text-muted mb-0">
+                                            <small>
+                                                <strong>Type:</strong> {{ document.get_document_type_display }} | 
+                                                <strong>Uploaded:</strong> {{ document.uploaded_date|date:"M d, Y" }}
+                                            </small>
+                                        </p>
+                                        {% if document.description %}
+                                        <p class="text-muted mt-2" style="font-size: 0.9rem;">
+                                            {{ document.description|truncatewords:20 }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a href="{{ document.file.url }}" class="btn btn-sm btn-primary" download>
+                                    ⬇️ Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <strong>No documents uploaded yet!</strong> You can upload your documents here.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+</style>
+{% endblock %}

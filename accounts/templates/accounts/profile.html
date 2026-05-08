@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">My Profile 👤</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Profile Photo -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if employee.profile_photo %}
+                        <img src="{{ employee.profile_photo.url }}" alt="Profile" class="img-fluid rounded-circle mb-3" style="max-width: 200px; height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light rounded-circle mx-auto mb-3" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 4rem;">👤</span>
+                        </div>
+                    {% endif %}
+                    <h4>{{ user.get_full_name }}</h4>
+                    <p class="text-muted">@{{ user.username }}</p>
+                    <hr>
+                    <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+                    <p><strong>Department:</strong> {{ employee.get_department_display }}</p>
+                    <p><strong>Position:</strong> {{ employee.get_position_display }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Forms -->
+        <div class="col-lg-9">
+            <!-- User Information Form -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ user_form.first_name }}
+                                {% if user_form.first_name.errors %}
+                                    <small class="text-danger d-block">{{ user_form.first_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ user_form.last_name }}
+                                {% if user_form.last_name.errors %}
+                                    <small class="text-danger d-block">{{ user_form.last_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ user_form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                                <small class="text-danger d-block">{{ user_form.email.errors }}</small>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Employee Additional Information Form -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Additional Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ employee_form.phone_number }}
+                                {% if employee_form.phone_number.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.phone_number.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ employee_form.gender }}
+                                {% if employee_form.gender.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.gender.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ employee_form.date_of_birth }}
+                                {% if employee_form.date_of_birth.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.date_of_birth.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.profile_photo.id_for_label }}" class="form-label">Profile Photo</label>
+                                {{ employee_form.profile_photo }}
+                                {% if employee_form.profile_photo.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.profile_photo.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ employee_form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ employee_form.address }}
+                            {% if employee_form.address.errors %}
+                                <small class="text-danger d-block">{{ employee_form.address.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ employee_form.city.id_for_label }}" class="form-label">City</label>
+                                {{ employee_form.city }}
+                                {% if employee_form.city.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.city.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ employee_form.state.id_for_label }}" class="form-label">State</label>
+                                {{ employee_form.state }}
+                                {% if employee_form.state.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.state.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ employee_form.zip_code.id_for_label }}" class="form-label">Zip Code</label>
+                                {{ employee_form.zip_code }}
+                                {% if employee_form.zip_code.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.zip_code.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+</style>
+{% endblock %}

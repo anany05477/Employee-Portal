@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">Welcome, {{ user.get_full_name|default:user.username }}! 👋</h1>
+            <p class="text-muted">Last login: {{ user.last_login|date:"M d, Y - H:i" }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'profile' %}" class="btn btn-primary">Edit Profile</a>
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger">Logout</a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    {% if employee %}
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Present Days</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.present }}</div>
+                        </div>
+                        <div class="text-primary" style="font-size: 2rem;">📅</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">On Leave</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.on_leave }}</div>
+                        </div>
+                        <div class="text-success" style="font-size: 2rem;">✈️</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Absent</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.absent }}</div>
+                        </div>
+                        <div class="text-warning" style="font-size: 2rem;">❌</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Approved Leaves</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.approved_leaves }}</div>
+                        </div>
+                        <div class="text-info" style="font-size: 2rem;">✅</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Employee Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">👤 Employee Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if employee %}
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Employee ID:</strong>
+                                <p class="text-muted">{{ employee.employee_id }}</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Department:</strong>
+                                <p class="text-muted">{{ employee.get_department_display }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Position:</strong>
+                                <p class="text-muted">{{ employee.get_position_display }}</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Phone:</strong>
+                                <p class="text-muted">{{ employee.phone_number|default:"N/A" }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Date Joined:</strong>
+                                <p class="text-muted">{{ employee.date_joined|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Status:</strong>
+                                <p>
+                                    {% if employee.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Employee profile not found. Contact HR.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- User Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">👤 User Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <strong>Username:</strong>
+                            <p class="text-muted">{{ user.username }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong>Email:</strong>
+                            <p class="text-muted">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <strong>First Name:</strong>
+                            <p class="text-muted">{{ user.first_name|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong>Last Name:</strong>
+                            <p class="text-muted">{{ user.last_name|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-12">
+                            <strong>Member Since:</strong>
+                            <p class="text-muted">{{ user.date_joined|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Row -->
+    <div class="row">
+        <!-- Recent Attendance -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📋 Recent Attendance</h5>
+                    <a href="{% url 'attendance' %}" class="text-white">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_attendance %}
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Check In</th>
+                                        <th>Check Out</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in recent_attendance %}
+                                    <tr>
+                                        <td>{{ record.date|date:"M d" }}</td>
+                                        <td>
+                                            {% if record.status == 'P' %}
+                                                <span class="badge bg-success">Present</span>
+                                            {% elif record.status == 'A' %}
+                                                <span class="badge bg-danger">Absent</span>
+                                            {% elif record.status == 'L' %}
+                                                <span class="badge bg-warning">Leave</span>
+                                            {% elif record.status == 'WFH' %}
+                                                <span class="badge bg-info">WFH</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Holiday</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ record.check_in_time|time:"H:i"|default:"--" }}</td>
+                                        <td>{{ record.check_out_time|time:"H:i"|default:"--" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted p-3">No attendance records found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Leave Requests -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📋 Pending Leave Requests</h5>
+                    <a href="{% url 'leave_history' %}" class="text-dark">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if pending_leaves %}
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Leave Type</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for leave in pending_leaves %}
+                                    <tr>
+                                        <td>{{ leave.get_leave_type_display }}</td>
+                                        <td>{{ leave.start_date|date:"M d" }}</td>
+                                        <td>{{ leave.end_date|date:"M d" }}</td>
+                                        <td><span class="badge bg-info">{{ leave.days_requested }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted p-3">No pending leave requests</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'leave_request' %}" class="btn btn-block btn-outline-primary w-100">
+                                📝 Request Leave
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'attendance' %}" class="btn btn-block btn-outline-success w-100">
+                                📅 View Attendance
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'performance' %}" class="btn btn-block btn-outline-info w-100">
+                                ⭐ Performance
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'documents' %}" class="btn btn-block btn-outline-warning w-100">
+                                📄 Documents
+                            </a>
+                        </div>
+                        {% if has_subordinates or user.is_superuser %}
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'leave_tracker' %}" class="btn btn-block btn-outline-danger w-100">
+                                🧾 Leave Tracker
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+    
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df;
+    }
+    
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a;
+    }
+    
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e;
+    }
+    
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc;
+    }
+</style>
+{% endblock %}

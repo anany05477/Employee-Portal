@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Leave - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">📝 Request Leave</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'leave_history' %}" class="btn btn-outline-info">View Leave History</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Submit Leave Request</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.leave_type.id_for_label }}" class="form-label">Leave Type</label>
+                            {{ form.leave_type }}
+                            {% if form.leave_type.errors %}
+                                <small class="text-danger d-block">{{ form.leave_type.errors }}</small>
+                            {% endif %}
+                            <small class="text-muted">
+                                <strong>Leave Types:</strong> PL (Paid Leave), UL (Unpaid Leave), SL (Sick Leave), CL (Casual Leave), ML (Maternity Leave)
+                            </small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date</label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <small class="text-danger d-block">{{ form.start_date.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <small class="text-danger d-block">{{ form.end_date.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">Reason</label>
+                            {{ form.reason }}
+                            {% if form.reason.errors %}
+                                <small class="text-danger d-block">{{ form.reason.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Information Card -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">ℹ️ Important Information</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Leave requests must be submitted at least 5 days in advance.</li>
+                        <li>Maximum 30 days of paid leave per financial year.</li>
+                        <li>Sick leave requires medical certificate after 3 consecutive days.</li>
+                        <li>All requests will be reviewed by your manager.</li>
+                        <li>You will receive notification once the request is approved/rejected.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+</style>
+{% endblock %}

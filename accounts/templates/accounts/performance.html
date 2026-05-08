@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Performance - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">⭐ Performance Reviews</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Performance Summary -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Average Rating</div>
+                            <div class="h3 mb-0">{{ average_rating }}/5</div>
+                        </div>
+                        <div class="text-warning" style="font-size: 3rem;">⭐</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Reviews</div>
+                            <div class="h3 mb-0">{{ total_reviews }}</div>
+                        </div>
+                        <div class="text-success" style="font-size: 3rem;">📊</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Reviews -->
+    {% if reviews %}
+    {% for review in reviews %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="card-title">
+                        Review Date: {{ review.review_date|date:"M d, Y" }}
+                    </h5>
+                    <p class="text-muted">
+                        <strong>Reviewer:</strong> {{ review.reviewer.get_full_name }}
+                    </p>
+                    
+                    <div class="mb-3">
+                        <strong>Rating:</strong>
+                        <div class="mt-2">
+                            {% for i in "12345" %}
+                                {% if i|add:"0" <= review.rating %}
+                                    <span style="color: #ffc107;">★</span>
+                                {% else %}
+                                    <span style="color: #ddd;">★</span>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="badge bg-info">{{ review.rating }}/5 - {{ review.get_rating_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Comments:</strong>
+                        <p class="mt-2">{{ review.comments }}</p>
+                    </div>
+
+                    {% if review.goals %}
+                    <div class="mb-3">
+                        <strong>Goals:</strong>
+                        <p class="mt-2">{{ review.goals }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light p-3 rounded">
+                        <h6 class="mb-3">Rating Breakdown</h6>
+                        {% if review.rating == 5 %}
+                            <div class="alert alert-success mb-0">Excellent Performance ✅</div>
+                        {% elif review.rating == 4 %}
+                            <div class="alert alert-info mb-0">Good Performance 👍</div>
+                        {% elif review.rating == 3 %}
+                            <div class="alert alert-warning mb-0">Average Performance ⚠️</div>
+                        {% elif review.rating == 2 %}
+                            <div class="alert alert-danger mb-0">Below Average ⚠️</div>
+                        {% else %}
+                            <div class="alert alert-danger mb-0">Poor Performance ❌</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <strong>No performance reviews yet!</strong> You don't have any performance reviews on record. Contact HR for more information.
+    </div>
+    {% endif %}
+
+    <!-- Back to Dashboard -->
+    <div class="mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+</style>
+{% endblock %}

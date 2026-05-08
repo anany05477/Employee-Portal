@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">📅 Attendance - {{ month }}</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-2">
+            <div class="card border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Present</div>
+                            <div class="h3 mb-0">{{ stats.present }}</div>
+                        </div>
+                        <div class="text-primary" style="font-size: 2rem;">✅</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">On Leave</div>
+                            <div class="h3 mb-0">{{ stats.on_leave }}</div>
+                        </div>
+                        <div class="text-success" style="font-size: 2rem;">✈️</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Absent</div>
+                            <div class="h3 mb-0">{{ stats.absent }}</div>
+                        </div>
+                        <div class="text-warning" style="font-size: 2rem;">❌</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-2">
+            <div class="card border-left-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Work From Home</div>
+                            <div class="h3 mb-0">{{ stats.wfh }}</div>
+                        </div>
+                        <div class="text-info" style="font-size: 2rem;">💻</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    {% if attendance_records %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">📋 Attendance Records</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr class="bg-light">
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Duration</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>
+                                <strong>{{ record.date|date:"D, M d Y" }}</strong>
+                            </td>
+                            <td>
+                                {% if record.status == 'P' %}
+                                    <span class="badge bg-success">Present</span>
+                                {% elif record.status == 'A' %}
+                                    <span class="badge bg-danger">Absent</span>
+                                {% elif record.status == 'L' %}
+                                    <span class="badge bg-warning text-dark">Leave</span>
+                                {% elif record.status == 'WFH' %}
+                                    <span class="badge bg-info">WFH</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Holiday</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ record.check_in_time|time:"H:i"|default:"--" }}</td>
+                            <td>{{ record.check_out_time|time:"H:i"|default:"--" }}</td>
+                            <td>
+                                {% if record.check_in_time and record.check_out_time %}
+                                    {% widthratio record.check_out_time record.check_in_time 1 %}h
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ record.notes|default:"--" }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <strong>No attendance records found!</strong> There are no attendance records for this month.
+    </div>
+    {% endif %}
+
+    <!-- Back to Dashboard -->
+    <div class="mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df;
+    }
+
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc;
+    }
+</style>
+{% endblock %}
