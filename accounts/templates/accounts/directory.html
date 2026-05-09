@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Directory - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">👥 Employee Directory</h4>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-2 mb-4">
+                    <div class="col-md-10">
+                        <input type="text" name="search" class="form-control" placeholder="Search by name, ID, department, or position" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Employee ID</th>
+                                <th>Department</th>
+                                <th>Position</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees %}
+                            <tr>
+                                <td>{{ employee.user.get_full_name|default:employee.user.username }}</td>
+                                <td>{{ employee.employee_id }}</td>
+                                <td>{{ employee.get_department_display }}</td>
+                                <td>{{ employee.get_position_display }}</td>
+                                <td>{{ employee.user.email }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if not employees %}
+                    <div class="alert alert-info mt-3">No employees found for your search.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

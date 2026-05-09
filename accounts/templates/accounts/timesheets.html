@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Timesheets{% endblock %}
+{% block content %}
+<h1 class="mb-4">Timesheet Management</h1>
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-header">Add Timesheet Entry</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Save Entry</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">Timesheet Entries</div>
+            <div class="card-body">
+                {% if entries %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Project</th>
+                            <th>Hours</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                        <tr>
+                            <td>{{ entry.date }}</td>
+                            <td>{% if entry.project %}{{ entry.project.name }}{% else %}N/A{% endif %}</td>
+                            <td>{{ entry.hours_worked }}</td>
+                            <td>{{ entry.description|truncatechars:80 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No timesheet entries yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

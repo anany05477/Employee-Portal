@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Announcements{% endblock %}
+{% block content %}
+<h1 class="mb-4">Announcements</h1>
+{% if can_post %}
+<div class="card mb-4">
+    <div class="card-header">Post New Announcement</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Post Announcement</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+<div class="card">
+    <div class="card-header">Active Announcements</div>
+    <div class="card-body">
+        {% if announcements %}
+        <ul class="list-group">
+            {% for announcement in announcements %}
+            <li class="list-group-item">
+                <h5>{{ announcement.title }}</h5>
+                <p>{{ announcement.content|linebreaksbr }}</p>
+                <div class="small text-muted">Published on {{ announcement.published_date }} • Audience: {{ announcement.audience }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No announcements at this time.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

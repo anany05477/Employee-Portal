@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Onboarding - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">🚀 Employee Onboarding</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-danger w-100">Save Onboarding Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">Onboarding Tasks</h4>
+            </div>
+            <div class="card-body">
+                {% if onboarding_tasks %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Completed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in onboarding_tasks %}
+                            <tr>
+                                <td>{{ task.title }}</td>
+                                <td>{{ task.due_date|date:'M d, Y'|default:'-' }}</td>
+                                <td>
+                                    {% if task.completed %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ task.completed_at|date:'M d, Y H:i'|default:'-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No onboarding tasks have been added yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

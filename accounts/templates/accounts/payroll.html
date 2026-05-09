@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Payroll - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">💰 Payroll & Salary Slip Access</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">View your payroll records and download salary slips securely.</p>
+                {% if payroll_records %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Gross Salary</th>
+                                <th>Deductions</th>
+                                <th>Net Salary</th>
+                                <th>Status</th>
+                                <th>Slip</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in payroll_records %}
+                            <tr>
+                                <td>{{ record.salary_month|date:'F Y' }}</td>
+                                <td>{{ record.gross_salary }}</td>
+                                <td>{{ record.deductions }}</td>
+                                <td>{{ record.net_salary }}</td>
+                                <td>{{ record.status }}</td>
+                                <td>
+                                    {% if record.slip %}
+                                    <a href="{{ record.slip.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Download</a>
+                                    {% else %}
+                                    <span class="text-muted">Not uploaded</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No payroll records are available yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

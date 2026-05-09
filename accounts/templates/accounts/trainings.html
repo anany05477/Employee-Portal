@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Trainings{% endblock %}
+{% block content %}
+<h1 class="mb-4">Trainings</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">Available Courses</div>
+            <div class="card-body">
+                {% if courses %}
+                <ul class="list-group">
+                    {% for course in courses %}
+                    <li class="list-group-item">
+                        <strong>{{ course.title }}</strong><br>
+                        {{ course.description|linebreaksbr }}
+                        <div class="small text-muted">{{ course.start_date }} - {{ course.end_date }} • Trainer: {{ course.trainer }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No training courses currently available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        {% if user.role == 'HR' or user.role == 'MANAGER' or user.is_superuser %}
+        <div class="card mb-4">
+            <div class="card-header">Create Training Course</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" name="create_course" class="btn btn-primary">Create Course</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        <div class="card">
+            <div class="card-header">My Enrollments</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ enrollment_form.as_p }}
+                    <button type="submit" name="enroll_course" class="btn btn-success">Enroll</button>
+                </form>
+                <hr>
+                {% if enrollments %}
+                <ul class="list-group">
+                    {% for enrollment in enrollments %}
+                        <li class="list-group-item">{{ enrollment.course.title }} • {{ enrollment.status }} </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No enrollments yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

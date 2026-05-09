@@ -1,10 +1,22 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import timedelta
 from django.utils import timezone
+from django.conf import settings
 
+class CustomUser(AbstractUser):
 
+    ROLE_CHOICES = (
+        ('HR', 'HR Admin'),
+        ('MANAGER', 'Manager'),
+        ('CEO', 'CEO'),
+    )
+
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+
+    def __str__(self):
+        return self.username
 class Employee(models.Model):
     """Employee model to store employee information."""
     
@@ -32,7 +44,7 @@ class Employee(models.Model):
         ('O', 'Other'),
     ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='employee')
     employee_id = models.CharField(max_length=20, unique=True)
     department = models.CharField(max_length=20, choices=DEPARTMENT_CHOICES)
     position = models.CharField(max_length=20, choices=POSITION_CHOICES)
@@ -114,7 +126,7 @@ class LeaveRequest(models.Model):
     end_date = models.DateField()
     reason = models.TextField()
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
-    approved_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_leaves')
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_leaves')
     approval_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -143,7 +155,7 @@ class Performance(models.Model):
     
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='performance_reviews')
     review_date = models.DateField(auto_now_add=True)
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='reviews_given')
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reviews_given')
     rating = models.IntegerField(choices=RATING_CHOICES)
     comments = models.TextField()
     goals = models.TextField(blank=True)
@@ -172,7 +184,7 @@ class Document(models.Model):
     document_type = models.CharField(max_length=10, choices=DOCUMENT_TYPE_CHOICES)
     title = models.CharField(max_length=200)
     file = models.FileField(upload_to='employee_documents/')
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     uploaded_date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True)
     
@@ -181,3 +193,341 @@ class Document(models.Model):
     
     def __str__(self):
         return f"{self.employee.user.username} - {self.title}"
+
+
+class PayrollRecord(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payroll_records')
+    salary_month = models.DateField()
+    gross_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    net_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    slip = models.FileField(upload_to='payroll_slips/', null=True, blank=True)
+    status = models.CharField(max_length=20, default='Available')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-salary_month']
+
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.salary_month:%B %Y}"
+
+
+class PolicyDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ('HR', 'HR Policy'),
+        ('COMPANY', 'Company Document'),
+        ('SECURITY', 'Security Policy'),
+        ('OTHER', 'Other'),
+    ]
+
+    title = models.CharField(max_length=255)
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES, default='HR')
+    file = models.FileField(upload_to='policy_documents/')
+    description = models.TextField(blank=True)
+    effective_date = models.DateField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-effective_date', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class Project(models.Model):
+    STATUS_CHOICES = [
+        ('PLANNED', 'Planned'),
+        ('ACTIVE', 'Active'),
+        ('COMPLETED', 'Completed'),
+        ('ON_HOLD', 'On Hold'),
+    ]
+
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    manager = models.ForeignKey(Employee, null=True, blank=True, on_delete=models.SET_NULL, related_name='managed_projects')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PLANNED')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class Task(models.Model):
+    PRIORITY_CHOICES = [
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
+    ]
+
+    STATUS_CHOICES = [
+        ('OPEN', 'Open'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('COMPLETED', 'Completed'),
+    ]
+
+    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.SET_NULL, related_name='tasks')
+    assigned_to = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='tasks')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='OPEN')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='MEDIUM')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class RecruitmentCandidate(models.Model):
+    STATUS_CHOICES = [
+        ('APPLIED', 'Applied'),
+        ('INTERVIEW', 'Interview Scheduled'),
+        ('OFFERED', 'Offered'),
+        ('HIRED', 'Hired'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=30, blank=True)
+    position_applied = models.CharField(max_length=255)
+    resume = models.FileField(upload_to='recruitment_resumes/', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='APPLIED')
+    applied_on = models.DateField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-applied_on']
+
+    def __str__(self):
+        return f"{self.full_name} - {self.position_applied}"
+
+
+class OnboardingTask(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='onboarding_tasks')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['completed', 'due_date', '-created_at']
+
+    def __str__(self):
+        return f"Onboarding: {self.title} ({self.employee.user.username})"
+
+
+class TrainingCourse(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    trainer = models.CharField(max_length=255, blank=True)
+    status = models.CharField(max_length=20, default='PLANNED')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date', 'title']
+
+    def __str__(self):
+        return self.title
+
+
+class TrainingEnrollment(models.Model):
+    course = models.ForeignKey(TrainingCourse, on_delete=models.CASCADE, related_name='enrollments')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='training_enrollments')
+    enrolled_on = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='ENROLLED')
+
+    class Meta:
+        unique_together = ['course', 'employee']
+        ordering = ['-enrolled_on']
+
+    def __str__(self):
+        return f"{self.employee.user.username} enrolled in {self.course.title}"
+
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    published_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    published_date = models.DateTimeField(auto_now_add=True)
+    audience = models.CharField(max_length=20, default='ALL')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-published_date']
+
+    def __str__(self):
+        return self.title
+
+
+class SupportTicket(models.Model):
+    PRIORITY_CHOICES = [
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
+    ]
+
+    STATUS_CHOICES = [
+        ('OPEN', 'Open'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('RESOLVED', 'Resolved'),
+    ]
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='support_tickets')
+    subject = models.CharField(max_length=255)
+    description = models.TextField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='MEDIUM')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='OPEN')
+    assigned_to = models.ForeignKey(Employee, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_tickets')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.subject} - {self.employee.user.username}"
+
+
+class ExpenseClaim(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='expense_claims')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.TextField()
+    receipt = models.FileField(upload_to='expense_receipts/', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    submitted_on = models.DateTimeField(auto_now_add=True)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_expenses')
+    approved_on = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-submitted_on']
+
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.amount}"
+
+
+class TimesheetEntry(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='timesheet_entries')
+    date = models.DateField()
+    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.SET_NULL, related_name='timesheet_entries')
+    hours_worked = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0)])
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        unique_together = ['employee', 'date', 'project']
+
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.date} ({self.hours_worked}h)"
+
+
+class Holiday(models.Model):
+    name = models.CharField(max_length=255)
+    date = models.DateField()
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['date']
+
+    def __str__(self):
+        return f"{self.name} ({self.date})"
+
+
+class Asset(models.Model):
+    STATUS_CHOICES = [
+        ('AVAILABLE', 'Available'),
+        ('ASSIGNED', 'Assigned'),
+        ('MAINTENANCE', 'Maintenance'),
+        ('RETIRED', 'Retired'),
+    ]
+
+    name = models.CharField(max_length=255)
+    asset_tag = models.CharField(max_length=100, unique=True)
+    category = models.CharField(max_length=100, blank=True)
+    assigned_to = models.ForeignKey(Employee, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_assets')
+    purchase_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='AVAILABLE')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.asset_tag})"
+
+
+class FeedbackSurvey(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class SurveyResponse(models.Model):
+    survey = models.ForeignKey(FeedbackSurvey, on_delete=models.CASCADE, related_name='responses')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='survey_responses')
+    response = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        unique_together = ['survey', 'employee']
+
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.survey.title}"
+
+
+class ChatMessage(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='chat_messages')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.message[:30]}"
+
+
+class AIRequest(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ai_requests')
+    query = models.TextField()
+    response = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"AI Request by {self.user.username} at {self.created_at:%Y-%m-%d %H:%M}"

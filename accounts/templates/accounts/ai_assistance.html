@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistance{% endblock %}
+{% block content %}
+<h1 class="mb-4">AI Assistance</h1>
+<div class="card mb-4">
+    <div class="card-header">Submit a Request</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">My Requests</div>
+    <div class="card-body">
+        {% if requests %}
+        <ul class="list-group">
+            {% for item in requests %}
+            <li class="list-group-item">
+                <strong>Question:</strong> {{ item.query }}<br>
+                <strong>Response:</strong> {{ item.response|linebreaksbr }}
+                <div class="small text-muted">Submitted on {{ item.created_at }} • Resolved: {{ item.resolved }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No AI requests yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

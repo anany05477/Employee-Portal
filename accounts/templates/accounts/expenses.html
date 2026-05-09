@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Expenses{% endblock %}
+{% block content %}
+<h1 class="mb-4">Expense Reimbursement</h1>
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-header">Submit Expense Claim</div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Submit Claim</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">Expense Claims</div>
+            <div class="card-body">
+                {% if claims %}
+                <ul class="list-group">
+                    {% for claim in claims %}
+                    <li class="list-group-item">
+                        <strong>{{ claim.employee.user.username }}</strong> – {{ claim.amount }}<br>
+                        <span class="small text-muted">Status: {{ claim.status }} • Submitted on {{ claim.submitted_on }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No expense claims found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

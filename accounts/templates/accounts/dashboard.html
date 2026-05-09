@@ -288,6 +288,41 @@
                                 📄 Documents
                             </a>
                         </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'payroll' %}" class="btn btn-block btn-outline-secondary w-100">
+                                💰 Payroll
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'policies' %}" class="btn btn-block btn-outline-dark w-100">
+                                📚 Policies
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'directory' %}" class="btn btn-block btn-outline-primary w-100">
+                                👥 Directory
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'projects' %}" class="btn btn-block btn-outline-success w-100">
+                                🗂️ Projects
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'tasks' %}" class="btn btn-block btn-outline-info w-100">
+                                ✅ Tasks
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'recruitment' %}" class="btn btn-block btn-outline-warning w-100">
+                                🧑‍💼 Recruitment
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'onboarding' %}" class="btn btn-block btn-outline-danger w-100">
+                                🚀 Onboarding
+                            </a>
+                        </div>
                         {% if has_subordinates or user.is_superuser %}
                         <div class="col-md-3 mb-2">
                             <a href="{% url 'leave_tracker' %}" class="btn btn-block btn-outline-danger w-100">

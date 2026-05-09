@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Recruitment - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">🧑‍💼 Recruitment & Hiring</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-warning w-100">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Candidate Pipeline</h4>
+            </div>
+            <div class="card-body">
+                {% if can_view_candidates %}
+                    {% if candidates %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th>Applied On</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for candidate in candidates %}
+                            <tr>
+                                <td>{{ candidate.full_name }}</td>
+                                <td>{{ candidate.position_applied }}</td>
+                                <td>{{ candidate.get_status_display }}</td>
+                                <td>{{ candidate.applied_on|date:'M d, Y' }}</td>
+                                <td>{{ candidate.email }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                    {% else %}
+                    <div class="alert alert-info">No candidate applications have been submitted yet.</div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info">Candidate list is visible to HR and leadership only.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
