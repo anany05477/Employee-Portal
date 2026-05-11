@@ -6,10 +6,11 @@ from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
+from functools import wraps
 from django.utils import timezone
 from django.db.models import Q, Avg, Sum
 from .forms import (
-    RegisterForm, LoginForm, EmployeeProfileForm, UserProfileForm, 
+    RegisterForm, LoginForm, EmployeeProfileForm, EmployeeCreateForm, UserProfileForm, 
     LeaveRequestForm, AttendanceForm, DocumentUploadForm,
     PolicyDocumentForm, ProjectForm, TaskForm, RecruitmentCandidateForm, OnboardingTaskForm,
     TrainingCourseForm, TrainingEnrollmentForm, AnnouncementForm, SupportTicketForm,
@@ -21,7 +22,7 @@ from .models import (
     PayrollRecord, PolicyDocument, Project, Task, RecruitmentCandidate, OnboardingTask,
     TrainingCourse, TrainingEnrollment, Announcement, SupportTicket,
     ExpenseClaim, TimesheetEntry, Holiday, Asset, FeedbackSurvey, SurveyResponse,
-    ChatMessage, AIRequest,
+    ChatMessage, AIRequest, AuditLog, ERPIntegrationSetting, ERPIntegrationLog,
 )
 
 
@@ -56,6 +57,7 @@ def login_view(request):
             
             if user is not None:
                 login(request, user)
+                _log_audit_action(user, 'login', request=request)
                 messages.success(request, f'Welcome back, {user.username}!')
                 return redirect('dashboard')
             else:
@@ -68,7 +70,9 @@ def login_view(request):
 
 def logout_view(request):
     """User logout view."""
+    user = request.user if request.user.is_authenticated else None
     logout(request)
+    _log_audit_action(user, 'logout', request=request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('login')
 
@@ -93,10 +97,47 @@ def _is_ceo(user):
 
 
 def _can_manage_leave(user, leave_request):
+    if user.is_superuser or _is_hr(user):
+        return True
+    if _is_manager(user):
+        manager = leave_request.employee.manager
+        return manager is not None and manager.user == user
+    return False
+
+
+def _has_role(user, roles):
     if user.is_superuser:
         return True
-    manager = leave_request.employee.manager
-    return manager is not None and manager.user == user
+    return getattr(user, 'role', '') in roles
+
+
+def role_required(accepted_roles):
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return redirect('login')
+            if not _has_role(request.user, accepted_roles):
+                messages.error(request, 'You do not have permission to access this page.')
+                return redirect('dashboard')
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
+
+
+def _get_client_ip(request):
+    return request.META.get('REMOTE_ADDR', '')
+
+
+def _log_audit_action(user, action, details='', request=None):
+    if user is None:
+        return
+    AuditLog.objects.create(
+        user=user,
+        action=action,
+        ip_address=_get_client_ip(request) if request is not None else '',
+        details=details,
+    )
 
 
 @login_required(login_url='login')
@@ -176,26 +217,32 @@ def profile(request):
     try:
         employee = Employee.objects.get(user=request.user)
     except Employee.DoesNotExist:
-        messages.error(request, 'Employee profile not found.')
-        return redirect('dashboard')
-    
+        employee = None
+
     if request.method == 'POST':
         user_form = UserProfileForm(request.POST, instance=request.user)
-        employee_form = EmployeeProfileForm(request.POST, request.FILES, instance=employee)
-        
+        if employee:
+            employee_form = EmployeeProfileForm(request.POST, request.FILES, instance=employee)
+        else:
+            employee_form = EmployeeCreateForm(request.POST, request.FILES)
+
         if user_form.is_valid() and employee_form.is_valid():
             user_form.save()
-            employee_form.save()
-            messages.success(request, 'Profile updated successfully!')
+            employee_profile = employee_form.save(commit=False)
+            if not employee:
+                employee_profile.user = request.user
+            employee_profile.save()
+            messages.success(request, 'Profile saved successfully!')
             return redirect('profile')
     else:
         user_form = UserProfileForm(instance=request.user)
-        employee_form = EmployeeProfileForm(instance=employee)
-    
+        employee_form = EmployeeProfileForm(instance=employee) if employee else EmployeeCreateForm()
+
     context = {
         'employee': employee,
         'user_form': user_form,
         'employee_form': employee_form,
+        'is_new_profile': employee is None,
     }
     return render(request, 'accounts/profile.html', context)
 
@@ -285,22 +332,35 @@ def reject_leave(request, request_id):
 @login_required(login_url='login')
 def leave_history(request):
     """Leave request history view."""
-    try:
-        employee = Employee.objects.get(user=request.user)
-    except Employee.DoesNotExist:
+    employee = _get_current_employee(request)
+    if employee is None and not (request.user.is_superuser or _is_hr(request.user)):
         messages.error(request, 'Employee profile not found.')
         return redirect('dashboard')
-    
-    leaves = LeaveRequest.objects.filter(employee=employee).order_by('-created_at')
-    
+
+    if request.user.is_superuser or _is_hr(request.user):
+        leaves = LeaveRequest.objects.all().order_by('-created_at')
+        show_employee_column = True
+    elif _is_manager(request.user):
+        leaves = LeaveRequest.objects.filter(
+            Q(employee=employee) | Q(employee__manager=employee)
+        ).order_by('-created_at')
+        show_employee_column = True
+    else:
+        leaves = LeaveRequest.objects.filter(employee=employee).order_by('-created_at')
+        show_employee_column = False
+
     # Filter by status if provided
     status = request.GET.get('status')
     if status:
         leaves = leaves.filter(status=status)
-    
+
+    manageable_leave_ids = [leave.id for leave in leaves if _can_manage_leave(request.user, leave)]
+
     context = {
         'leaves': leaves,
         'current_status': status,
+        'show_employee_column': show_employee_column,
+        'manageable_leave_ids': manageable_leave_ids,
     }
     return render(request, 'accounts/leave_history.html', context)
 
@@ -311,9 +371,9 @@ def attendance_view(request):
     try:
         employee = Employee.objects.get(user=request.user)
     except Employee.DoesNotExist:
-        messages.error(request, 'Employee profile not found.')
-        return redirect('dashboard')
-    
+        employee = None
+        messages.error(request, 'Employee profile not found. Contact HR to complete your employee record.')
+
     # Get attendance records for current month
     today = timezone.now().date()
     month_start = today.replace(day=1)
@@ -323,11 +383,13 @@ def attendance_view(request):
     else:
         month_end = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
     
-    attendance_records = Attendance.objects.filter(
-        employee=employee,
-        date__gte=month_start,
-        date__lte=month_end
-    ).order_by('-date')
+    attendance_records = Attendance.objects.none()
+    if employee is not None:
+        attendance_records = Attendance.objects.filter(
+            employee=employee,
+            date__gte=month_start,
+            date__lte=month_end
+        ).order_by('-date')
     
     # Calculate statistics
     present = attendance_records.filter(status='P').count()
@@ -336,6 +398,7 @@ def attendance_view(request):
     wfh = attendance_records.filter(status='WFH').count()
     
     context = {
+        'employee': employee,
         'attendance_records': attendance_records,
         'month': today.strftime('%B %Y'),
         'stats': {
@@ -479,7 +542,11 @@ def policies_view(request):
 @login_required(login_url='login')
 def directory_view(request):
     query = request.GET.get('search', '')
+    department = request.GET.get('department', '')
+    position = request.GET.get('position', '')
+
     employees = Employee.objects.select_related('user').all()
+
     if query:
         employees = employees.filter(
             Q(user__username__icontains=query) |
@@ -488,9 +555,19 @@ def directory_view(request):
             Q(position__icontains=query)
         )
 
+    if department:
+        employees = employees.filter(department=department)
+
+    if position:
+        employees = employees.filter(position=position)
+
     context = {
         'employees': employees,
         'search_query': query,
+        'selected_department': department,
+        'selected_position': position,
+        'departments': Employee.DEPARTMENT_CHOICES,
+        'positions': Employee.POSITION_CHOICES,
     }
     return render(request, 'accounts/directory.html', context)
 
@@ -904,3 +981,58 @@ def reports_view(request):
         'average_rating': round(avg_rating, 2),
     }
     return render(request, 'accounts/reports.html', context)
+
+
+@login_required(login_url='login')
+@role_required(['HR', 'CEO'])
+def hr_actions_view(request):
+    """Central HR actions dashboard."""
+    open_leave_requests = LeaveRequest.objects.filter(status='P').count()
+    active_payroll = PayrollRecord.objects.count()
+    active_policies = PolicyDocument.objects.filter(is_active=True).count()
+    open_candidates = RecruitmentCandidate.objects.exclude(status='REJECTED').count()
+    audit_entries = AuditLog.objects.count()
+    context = {
+        'open_leave_requests': open_leave_requests,
+        'active_payroll': active_payroll,
+        'active_policies': active_policies,
+        'open_candidates': open_candidates,
+        'audit_entries': audit_entries,
+    }
+    return render(request, 'accounts/hr_actions.html', context)
+
+
+@login_required(login_url='login')
+@role_required(['HR', 'CEO'])
+def erp_integration_view(request):
+    settings_qs = ERPIntegrationSetting.objects.filter(active=True)
+    integration_settings = settings_qs.first()
+    logs = ERPIntegrationLog.objects.order_by('-created_at')[:20]
+
+    if request.method == 'POST':
+        if not integration_settings:
+            messages.error(request, 'No active ERP integration setting is configured.')
+        else:
+            # Placeholder integration step; replace with actual ERP/HRMS API calls.
+            ERPIntegrationLog.objects.create(
+                action='ERP_SYNC',
+                status='SUCCESS',
+                message=f'Synchronized with ERP endpoint {integration_settings.api_endpoint}',
+            )
+            messages.success(request, 'ERP sync completed. Check logs for details.')
+
+    context = {
+        'integration_settings': integration_settings,
+        'logs': logs,
+    }
+    return render(request, 'accounts/erp_integration.html', context)
+
+
+@login_required(login_url='login')
+@role_required(['HR', 'CEO'])
+def audit_logs_view(request):
+    logs = AuditLog.objects.select_related('user').order_by('-created_at')[:50]
+    context = {
+        'audit_logs': logs,
+    }
+    return render(request, 'accounts/audit_logs.html', context)

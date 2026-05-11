@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}HR Actions - Employee Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">HR Actions</h1>
+            <p class="text-muted">Manage HR workflows, approvals, payroll, recruitment, policies, and audits from one place.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-primary shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">Pending Leave</h5>
+                            <p class="card-text text-muted">Review and approve employee leave requests.</p>
+                        </div>
+                        <span class="badge bg-primary fs-6">{{ open_leave_requests }}</span>
+                    </div>
+                    <a href="{% url 'leave_tracker' %}" class="btn btn-sm btn-primary mt-3">Open Leave Tracker</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-success shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">Payroll Records</h5>
+                            <p class="card-text text-muted">View payroll slips and salary details for every employee.</p>
+                        </div>
+                        <span class="badge bg-success fs-6">{{ active_payroll }}</span>
+                    </div>
+                    <a href="{% url 'payroll' %}" class="btn btn-sm btn-success mt-3">View Payroll</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-info shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">Active Policies</h5>
+                            <p class="card-text text-muted">Update and publish policy documents across the organization.</p>
+                        </div>
+                        <span class="badge bg-info fs-6">{{ active_policies }}</span>
+                    </div>
+                    <a href="{% url 'policies' %}" class="btn btn-sm btn-info mt-3 text-white">Manage Policies</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-warning shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">Recruitment</h5>
+                            <p class="card-text text-muted">Track open candidates and hiring progress.</p>
+                        </div>
+                        <span class="badge bg-warning text-dark fs-6">{{ open_candidates }}</span>
+                    </div>
+                    <a href="{% url 'recruitment' %}" class="btn btn-sm btn-warning mt-3">Review Candidates</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-secondary shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">ERP Sync</h5>
+                            <p class="card-text text-muted">Run ERP syncs and check integration logs.</p>
+                        </div>
+                        <span class="badge bg-secondary fs-6">Live</span>
+                    </div>
+                    <a href="{% url 'erp_integration' %}" class="btn btn-sm btn-secondary mt-3">Open ERP Integration</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-dark shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">Audit Logs</h5>
+                            <p class="card-text text-muted">Monitor system actions and security events.</p>
+                        </div>
+                        <span class="badge bg-dark fs-6">{{ audit_entries }}</span>
+                    </div>
+                    <a href="{% url 'audit_logs' %}" class="btn btn-sm btn-dark mt-3">View Audit Logs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

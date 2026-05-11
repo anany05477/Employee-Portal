@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}ERP Integration{% endblock %}
+{% block content %}
+<h1 class="mb-4">ERP / HRMS Integration</h1>
+<div class="card mb-4">
+    <div class="card-header">Integration Configuration</div>
+    <div class="card-body">
+        {% if integration_settings %}
+            <dl class="row">
+                <dt class="col-sm-3">Name</dt>
+                <dd class="col-sm-9">{{ integration_settings.name }}</dd>
+                <dt class="col-sm-3">Endpoint</dt>
+                <dd class="col-sm-9">{{ integration_settings.api_endpoint }}</dd>
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">{{ integration_settings.active|yesno:'Active,Inactive' }}</dd>
+            </dl>
+            <form method="post">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit">Run ERP Sync</button>
+            </form>
+        {% else %}
+            <p>No ERP integration configuration is active. Please configure one in the admin area.</p>
+        {% endif %}
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">Integration Logs</div>
+    <div class="card-body">
+        {% if logs %}
+            <ul class="list-group">
+                {% for log in logs %}
+                    <li class="list-group-item">
+                        <strong>{{ log.action }}</strong> — {{ log.status }}<br>
+                        <small class="text-muted">{{ log.created_at }}</small>
+                        <p class="mb-0">{{ log.message|linebreaksbr }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No integration logs available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

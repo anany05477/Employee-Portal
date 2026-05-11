@@ -74,6 +74,27 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Performance</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">
+                                {% if recent_reviews %}
+                                    {{ recent_reviews|length }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">Reviews</small>
+                        </div>
+                        <div class="text-danger" style="font-size: 2rem;">⭐</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     {% endif %}
 
@@ -124,7 +145,8 @@
                             </div>
                         </div>
                     {% else %}
-                        <p class="text-muted">Employee profile not found. Contact HR.</p>
+                        <p class="text-muted">Employee profile not found.</p>
+                        <a href="{% url 'profile' %}" class="btn btn-primary">Create Employee Profile</a>
                     {% endif %}
                 </div>
             </div>
@@ -259,82 +281,7 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">⚡ Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'leave_request' %}" class="btn btn-block btn-outline-primary w-100">
-                                📝 Request Leave
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'attendance' %}" class="btn btn-block btn-outline-success w-100">
-                                📅 View Attendance
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'performance' %}" class="btn btn-block btn-outline-info w-100">
-                                ⭐ Performance
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'documents' %}" class="btn btn-block btn-outline-warning w-100">
-                                📄 Documents
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'payroll' %}" class="btn btn-block btn-outline-secondary w-100">
-                                💰 Payroll
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'policies' %}" class="btn btn-block btn-outline-dark w-100">
-                                📚 Policies
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'directory' %}" class="btn btn-block btn-outline-primary w-100">
-                                👥 Directory
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'projects' %}" class="btn btn-block btn-outline-success w-100">
-                                🗂️ Projects
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'tasks' %}" class="btn btn-block btn-outline-info w-100">
-                                ✅ Tasks
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'recruitment' %}" class="btn btn-block btn-outline-warning w-100">
-                                🧑‍💼 Recruitment
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'onboarding' %}" class="btn btn-block btn-outline-danger w-100">
-                                🚀 Onboarding
-                            </a>
-                        </div>
-                        {% if has_subordinates or user.is_superuser %}
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'leave_tracker' %}" class="btn btn-block btn-outline-danger w-100">
-                                🧾 Leave Tracker
-                            </a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 </div>
 
 <style>

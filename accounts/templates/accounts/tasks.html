@@ -42,7 +42,13 @@
                             {% for task in tasks %}
                             <tr>
                                 <td>{{ task.title }}</td>
-                                <td>{{ task.project.name if task.project else '—' }}</td>
+                                <td>
+                                    {% if task.project %}
+                                        {{ task.project.name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
                                 <td>{{ task.assigned_to.user.get_full_name|default:task.assigned_to.user.username }}</td>
                                 <td>{{ task.get_status_display }}</td>
                                 <td>{{ task.get_priority_display }}</td>

@@ -23,6 +23,9 @@ from .models import (
     SurveyResponse,
     ChatMessage,
     AIRequest,
+    ERPIntegrationSetting,
+    ERPIntegrationLog,
+    AuditLog,
 )
 
 
@@ -235,6 +238,30 @@ class AIRequestAdmin(admin.ModelAdmin):
     list_display = ['user', 'created_at', 'resolved']
     list_filter = ['resolved', 'created_at']
     search_fields = ['user__username', 'query']
+    date_hierarchy = 'created_at'
+
+
+@admin.register(ERPIntegrationSetting)
+class ERPIntegrationSettingAdmin(admin.ModelAdmin):
+    list_display = ['name', 'api_endpoint', 'active', 'created_at']
+    list_filter = ['active', 'created_at']
+    search_fields = ['name', 'api_endpoint']
+    date_hierarchy = 'created_at'
+
+
+@admin.register(ERPIntegrationLog)
+class ERPIntegrationLogAdmin(admin.ModelAdmin):
+    list_display = ['action', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['action', 'message']
+    date_hierarchy = 'created_at'
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ['user', 'action', 'ip_address', 'created_at']
+    list_filter = ['action', 'created_at']
+    search_fields = ['user__username', 'action', 'details']
     date_hierarchy = 'created_at'
 
 

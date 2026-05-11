@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Audit Logs{% endblock %}
+{% block content %}
+<h1 class="mb-4">Audit Logs</h1>
+<div class="card">
+    <div class="card-body">
+        {% if audit_logs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>IP</th>
+                        <th>Details</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in audit_logs %}
+                    <tr>
+                        <td>{{ log.user.username if log.user else 'System' }}</td>
+                        <td>{{ log.action }}</td>
+                        <td>{{ log.ip_address }}</td>
+                        <td>{{ log.details|truncatechars:100 }}</td>
+                        <td>{{ log.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No audit records to show.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

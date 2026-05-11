@@ -117,6 +117,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+# ERP / HRMS integration settings
+ERP_INTEGRATION = {
+    'ENABLED': False,
+    'API_ENDPOINT': os.getenv('ERP_API_ENDPOINT', ''),
+    'API_KEY': os.getenv('ERP_API_KEY', ''),
+    'CLIENT_ID': os.getenv('ERP_CLIENT_ID', ''),
+}
+
+# Security, backup, and compliance settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = False  # Set True in production with HTTPS
+CSRF_COOKIE_SECURE = False     # Set True in production with HTTPS
+X_FRAME_OPTIONS = 'DENY'
+SECURE_SSL_REDIRECT = False    # Enable in production
+DATA_RETENTION_DAYS = 365
+BACKUP_ROOT = BASE_DIR / 'backups'
+
 # Login URL
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'

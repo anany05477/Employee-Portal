@@ -11,11 +11,28 @@
             </div>
             <div class="card-body">
                 <form method="get" class="row g-2 mb-4">
-                    <div class="col-md-10">
+                    <div class="col-md-4">
                         <input type="text" name="search" class="form-control" placeholder="Search by name, ID, department, or position" value="{{ search_query }}">
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    <div class="col-md-3">
+                        <select name="department" class="form-select">
+                            <option value="">All Departments</option>
+                            {% for value, label in departments %}
+                                <option value="{{ value }}" {% if selected_department == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="position" class="form-select">
+                            <option value="">All Positions</option>
+                            {% for value, label in positions %}
+                                <option value="{{ value }}" {% if selected_position == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-grid gap-2">
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                        <a href="{% url 'directory' %}" class="btn btn-outline-secondary w-100">Reset</a>
                     </div>
                 </form>
 

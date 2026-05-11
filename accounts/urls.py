@@ -45,4 +45,7 @@ urlpatterns = [
     path('chat/', views.chat_view, name='chat'),
     path('ai-assistance/', views.ai_assistance_view, name='ai_assistance'),
     path('reports/', views.reports_view, name='reports'),
+    path('hr-actions/', views.hr_actions_view, name='hr_actions'),
+    path('erp-integration/', views.erp_integration_view, name='erp_integration'),
+    path('audit-logs/', views.audit_logs_view, name='audit_logs'),
 ]

@@ -98,6 +98,28 @@ class EmployeeProfileForm(forms.ModelForm):
         }
 
 
+class EmployeeCreateForm(forms.ModelForm):
+    """Form to create a new employee profile."""
+
+    class Meta:
+        model = Employee
+        fields = ['employee_id', 'department', 'position', 'phone_number', 'gender', 'date_of_birth', 'address', 'city', 'state', 'zip_code', 'salary', 'profile_photo']
+        widgets = {
+            'employee_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Employee ID'}),
+            'department': forms.Select(attrs={'class': 'form-control'}),
+            'position': forms.Select(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
+            'gender': forms.Select(attrs={'class': 'form-control'}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Address'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
+            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State'}),
+            'zip_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Zip Code'}),
+            'salary': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Salary', 'step': '0.01'}),
+            'profile_photo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
 class UserProfileForm(forms.ModelForm):
     """Form for user profile update."""
     
@@ -116,11 +138,12 @@ class LeaveRequestForm(forms.ModelForm):
     
     class Meta:
         model = LeaveRequest
-        fields = ['leave_type', 'start_date', 'end_date', 'reason']
+        fields = ['leave_type', 'start_date', 'end_date', 'half_day_option', 'reason']
         widgets = {
             'leave_type': forms.Select(attrs={'class': 'form-control'}),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'half_day_option': forms.Select(attrs={'class': 'form-control'}),
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Reason for leave'}),
         }
 

@@ -65,13 +65,17 @@
                             <td>{{ leave.reason|truncatewords:12 }}</td>
                             <td>{{ leave.created_at|date:"M d, Y" }}</td>
                             <td>
-                                <form method="post" action="{% url 'approve_leave' leave.id %}" class="d-inline">
+                                <form method="post" action="{% url 'approve_leave' leave.id %}" class="d-inline me-1">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-success mb-1">Approve</button>
+                                    <button type="submit" class="btn btn-sm btn-success mb-1">
+                                        <i class="fas fa-check me-1"></i>Approve
+                                    </button>
                                 </form>
                                 <form method="post" action="{% url 'reject_leave' leave.id %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-times me-1"></i>Reject
+                                    </button>
                                 </form>
                             </td>
                         </tr>

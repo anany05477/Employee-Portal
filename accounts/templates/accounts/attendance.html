@@ -72,6 +72,12 @@
         </div>
     </div>
 
+    {% if not employee %}
+    <div class="alert alert-warning" role="alert">
+        <strong>Employee profile missing.</strong> Please <a href="{% url 'profile' %}" class="alert-link">create your employee profile</a> before viewing attendance.
+    </div>
+    {% endif %}
+
     <!-- Attendance Table -->
     {% if attendance_records %}
     <div class="card">

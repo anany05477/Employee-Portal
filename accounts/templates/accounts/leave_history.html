@@ -33,6 +33,7 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr class="bg-light">
+                            {% if show_employee_column %}<th>Employee</th>{% endif %}
                             <th>Leave Type</th>
                             <th>From Date</th>
                             <th>To Date</th>
@@ -40,11 +41,18 @@
                             <th>Reason</th>
                             <th>Status</th>
                             <th>Submitted</th>
+                            {% if manageable_leave_ids %}<th>Action</th>{% endif %}
                         </tr>
                     </thead>
                     <tbody>
                         {% for leave in leaves %}
                         <tr>
+                            {% if show_employee_column %}
+                            <td>
+                                <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
+                                <div class="text-muted">{{ leave.employee.employee_id }}</div>
+                            </td>
+                            {% endif %}
                             <td>
                                 <strong>{{ leave.get_leave_type_display }}</strong>
                             </td>
@@ -68,6 +76,24 @@
                                 {% endif %}
                             </td>
                             <td>{{ leave.created_at|date:"M d, Y" }}</td>
+                            {% if leave.id in manageable_leave_ids %}
+                            <td>
+                                <form method="post" action="{% url 'approve_leave' leave.id %}" class="d-inline me-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success mb-1">
+                                        <i class="fas fa-check me-1"></i>Approve
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'reject_leave' leave.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-times me-1"></i>Reject
+                                    </button>
+                                </form>
+                            </td>
+                            {% elif manageable_leave_ids %}
+                            <td></td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>

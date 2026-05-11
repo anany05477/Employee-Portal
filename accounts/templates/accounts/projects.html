@@ -41,7 +41,13 @@
                             {% for project in projects %}
                             <tr>
                                 <td>{{ project.name }}</td>
-                                <td>{{ project.manager.user.get_full_name|default:project.manager.user.username if project.manager else 'Unassigned' }}</td>
+                                <td>
+                                    {% if project.manager %}
+                                        {{ project.manager.user.get_full_name|default:project.manager.user.username }}
+                                    {% else %}
+                                        Unassigned
+                                    {% endif %}
+                                </td>
                                 <td>{{ project.get_status_display }}</td>
                                 <td>{{ project.start_date|date:'M d, Y'|default:'-' }}</td>
                                 <td>{{ project.end_date|date:'M d, Y'|default:'-' }}</td>

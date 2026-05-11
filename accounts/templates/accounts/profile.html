@@ -18,7 +18,7 @@
         <div class="col-lg-3 mb-4">
             <div class="card">
                 <div class="card-body text-center">
-                    {% if employee.profile_photo %}
+                    {% if employee and employee.profile_photo %}
                         <img src="{{ employee.profile_photo.url }}" alt="Profile" class="img-fluid rounded-circle mb-3" style="max-width: 200px; height: 200px; object-fit: cover;">
                     {% else %}
                         <div class="bg-light rounded-circle mx-auto mb-3" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
@@ -28,9 +28,14 @@
                     <h4>{{ user.get_full_name }}</h4>
                     <p class="text-muted">@{{ user.username }}</p>
                     <hr>
-                    <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
-                    <p><strong>Department:</strong> {{ employee.get_department_display }}</p>
-                    <p><strong>Position:</strong> {{ employee.get_position_display }}</p>
+                    {% if employee %}
+                        <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+                        <p><strong>Department:</strong> {{ employee.get_department_display }}</p>
+                        <p><strong>Position:</strong> {{ employee.get_position_display }}</p>
+                    {% else %}
+                        <p class="text-muted">No employee profile exists yet.</p>
+                        <p class="mb-0">Fill the form to create your employee record.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -76,11 +81,45 @@
             <!-- Employee Additional Information Form -->
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Additional Information</h5>
+                    <h5 class="mb-0">{% if is_new_profile %}Create Employee Profile{% else %}Additional Information{% endif %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
+                        {% if is_new_profile %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.employee_id.id_for_label }}" class="form-label">Employee ID</label>
+                                {{ employee_form.employee_id }}
+                                {% if employee_form.employee_id.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.employee_id.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.department.id_for_label }}" class="form-label">Department</label>
+                                {{ employee_form.department }}
+                                {% if employee_form.department.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.department.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.position.id_for_label }}" class="form-label">Position</label>
+                                {{ employee_form.position }}
+                                {% if employee_form.position.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.position.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ employee_form.salary.id_for_label }}" class="form-label">Salary</label>
+                                {{ employee_form.salary }}
+                                {% if employee_form.salary.errors %}
+                                    <small class="text-danger d-block">{{ employee_form.salary.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="{{ employee_form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
@@ -147,7 +186,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="submit" class="btn btn-primary">{% if is_new_profile %}Create Profile{% else %}Save Changes{% endif %}</button>
                     </form>
                 </div>
             </div>

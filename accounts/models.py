@@ -120,10 +120,17 @@ class LeaveRequest(models.Model):
         ('R', 'Rejected'),
     ]
     
+    HALF_DAY_CHOICES = [
+        ('FULL', 'Full Day'),
+        ('MORNING', 'Morning (Half Day)'),
+        ('AFTERNOON', 'Afternoon (Half Day)'),
+    ]
+    
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='leave_requests')
     leave_type = models.CharField(max_length=2, choices=LEAVE_TYPE_CHOICES)
     start_date = models.DateField()
     end_date = models.DateField()
+    half_day_option = models.CharField(max_length=10, choices=HALF_DAY_CHOICES, default='FULL')
     reason = models.TextField()
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_leaves')
@@ -139,7 +146,10 @@ class LeaveRequest(models.Model):
     
     @property
     def days_requested(self):
-        return (self.end_date - self.start_date).days + 1
+        days = (self.end_date - self.start_date).days + 1
+        if self.half_day_option != 'FULL':
+            days = days - 0.5
+        return days
 
 
 class Performance(models.Model):
@@ -531,3 +541,45 @@ class AIRequest(models.Model):
 
     def __str__(self):
         return f"AI Request by {self.user.username} at {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class ERPIntegrationSetting(models.Model):
+    name = models.CharField(max_length=255)
+    api_endpoint = models.URLField(blank=True)
+    api_key = models.CharField(max_length=255, blank=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+
+
+class ERPIntegrationLog(models.Model):
+    action = models.CharField(max_length=100)
+    status = models.CharField(max_length=50)
+    message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.action} - {self.status}"
+
+
+class AuditLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=255)
+    ip_address = models.CharField(max_length=50, blank=True)
+    details = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        username = self.user.username if self.user else 'System'
+        return f"{username} • {self.action} @ {self.created_at:%Y-%m-%d %H:%M}"
